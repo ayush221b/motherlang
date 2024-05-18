@@ -5,14 +5,21 @@ import 'package:motherlang/src/nodes.dart';
 class Interpreter implements Visitor<dynamic> {
   Environment environment = Environment();
 
-  void interpret(List<Stmt> statements) {
+  String consoleOutput = '';
+
+  // This function will also return a string value
+  // that has the console output
+  String interpret(List<Stmt> statements) {
     try {
       for (final statement in statements) {
         _execute(statement);
       }
-    } catch (error) {
+    } catch (error, stacktrace) {
       print(error);
+      print(stacktrace);
+      consoleOutput += '${error.toString()} \n Stacktrace: \n $stacktrace';
     }
+    return consoleOutput;
   }
 
   dynamic _execute(Stmt statement) {
@@ -34,11 +41,13 @@ class Interpreter implements Visitor<dynamic> {
     return null; // Expression statements don't 'return' a value
   }
 
-  // Handling Debug Statements
+  // Handling print Statements
   @override
   dynamic visitDebugStmtExpr(DebugNode stmt) {
     dynamic value = _evaluate(stmt.value);
     print(stringify(value));
+    consoleOutput += stringify(value);
+    consoleOutput += '\n';
     return null;
   }
 

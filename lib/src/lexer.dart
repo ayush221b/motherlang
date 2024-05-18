@@ -1,3 +1,5 @@
+import 'package:motherlang/src/language_definition.dart';
+
 enum TokenType {
   variableDeclaration,
   number,
@@ -40,12 +42,17 @@ class Token {
 
 class Lexer {
   final String input;
+  final LanguageDefinition languageDefinition;
+
   int _position = 0;
   int _start = 0;
 
   List<Token> tokens = [];
 
-  Lexer(this.input);
+  Lexer({
+    required this.input,
+    required this.languageDefinition,
+  });
 
   List<Token> tokenize() {
     _skipWhitespace();
@@ -72,16 +79,17 @@ class Lexer {
   }
 
   bool _matchKeyword() {
-    final keywords = const {
-      "ai will replace": TokenType.variableDeclaration,
-      "weekly sprint": TokenType.whileLoop,
-      "maybe": TokenType.ifCondition,
-      "what if": TokenType.elseIfCondition,
-      "nevermind": TokenType.elseCondition,
-      "debug": TokenType.print,
-      "feature": TokenType.trueBoolean,
-      "bug": TokenType.falseBoolean,
-      "this is not real code": TokenType.logicalNot,
+    final keywords = {
+      languageDefinition.variableDeclarationKeyword:
+          TokenType.variableDeclaration,
+      languageDefinition.whileLoopKeyword: TokenType.whileLoop,
+      languageDefinition.ifConditionKeyWord: TokenType.ifCondition,
+      languageDefinition.elseIfConditionKeyword: TokenType.elseIfCondition,
+      languageDefinition.elseConditionKeyword: TokenType.elseCondition,
+      languageDefinition.printKeyword: TokenType.print,
+      languageDefinition.trueBooleanKeyword: TokenType.trueBoolean,
+      languageDefinition.falseBooleanKeyword: TokenType.falseBoolean,
+      languageDefinition.logicalNotKeyword: TokenType.logicalNot,
       "||": TokenType.logicalOr,
       "&&": TokenType.logicalAnd,
       ">=": TokenType.greaterThanOrEqual,
@@ -100,7 +108,7 @@ class Lexer {
       "(": TokenType.leftParen,
       ")": TokenType.rightParen,
       ";": TokenType.semicolon,
-      // ... Add more keywords
+      // ... Add more keywords in the future, or make more customisable
     };
 
     for (final entry in keywords.entries) {
