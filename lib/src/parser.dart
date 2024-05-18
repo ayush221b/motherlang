@@ -11,11 +11,6 @@ class Parser {
   List<Stmt> parse() {
     List<Stmt> statements = [];
 
-    // Start Marker Check
-    if (!_tryMatch(TokenType.number) ||
-        _tokens[_current - 1].value != "11111111") {
-      throw Exception("FF 255 programs must start with '11111111'");
-    }
     while (!_isAtEnd()) {
       statements.add(parseStatement());
     }
@@ -24,17 +19,17 @@ class Parser {
   }
 
   Stmt parseStatement() {
-    if (_tryMatch(TokenType.aiWillReplace)) {
+    if (_tryMatch(TokenType.variableDeclaration)) {
       final name = _expectIdentifier();
       _expect(TokenType.equal);
       final value = parseExpression();
       _expect(TokenType.semicolon);
       return AssignmentNode(name, value);
-    } else if (_tryMatch(TokenType.debug)) {
+    } else if (_tryMatch(TokenType.print)) {
       Expr expression = parseExpression();
       _expect(TokenType.semicolon);
       return DebugNode(expression);
-    } else if (_tryMatch(TokenType.weeklySprint)) {
+    } else if (_tryMatch(TokenType.whileLoop)) {
       Expr condition = parseExpression();
 
       List<Stmt> body = parseBlock();
@@ -42,7 +37,7 @@ class Parser {
       currentLoop = LoopNode(condition, body);
 
       return currentLoop!;
-    } else if (_tryMatch(TokenType.maybe)) {
+    } else if (_tryMatch(TokenType.ifCondition)) {
       List<ConditionalBlock> blocks = [];
 
       // First 'maybe' Block
@@ -51,14 +46,14 @@ class Parser {
       blocks.add(ConditionalBlock(condition, maybeBlock));
 
       // Subsequent 'else if' blocks
-      while (_tryMatch(TokenType.whatIf)) {
+      while (_tryMatch(TokenType.elseIfCondition)) {
         condition = parseExpression();
         List<Stmt> whatIfBlock = parseBlock();
         blocks.add(ConditionalBlock(condition, whatIfBlock));
       }
 
       // Optional 'nevermind' (else) Block
-      if (_tryMatch(TokenType.nevermind)) {
+      if (_tryMatch(TokenType.elseCondition)) {
         List<Stmt> elseBlock = parseBlock();
         blocks.add(
           ConditionalBlock(null, elseBlock),
@@ -171,7 +166,7 @@ class Parser {
   }
 
   Expr parseUnaryExpr() {
-    if (_tryMatch(TokenType.minus) || _tryMatch(TokenType.thisIsNotRealCode)) {
+    if (_tryMatch(TokenType.minus) || _tryMatch(TokenType.logicalNot)) {
       TokenType operator = _tokens[_current - 1].type;
       Expr operand = parseUnaryExpr(); // Allow nested unary operations
       return UnaryOpNode(operator, operand);
@@ -208,15 +203,15 @@ class Parser {
       String name = _tokens[_current].value;
       _current++; // Advance token index
       return VariableNode(name);
-    } else if (_tokens[_current].type == TokenType.feature) {
+    } else if (_tokens[_current].type == TokenType.trueBoolean) {
       _current++;
       return BooleanNode(true);
-    } else if (_tokens[_current].type == TokenType.bug) {
+    } else if (_tokens[_current].type == TokenType.falseBoolean) {
       _current++;
       return BooleanNode(false);
-    } else if (_tryMatch(TokenType.thisIsNotRealCode)) {
+    } else if (_tryMatch(TokenType.logicalNot)) {
       Expr operand = parsePrimaryExpr();
-      return UnaryOpNode(TokenType.thisIsNotRealCode, operand);
+      return UnaryOpNode(TokenType.logicalNot, operand);
     } else if (_tryMatch(TokenType.leftParen)) {
       Expr expr = parseExpression();
       _expect(TokenType.rightParen);

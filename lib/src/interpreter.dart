@@ -111,7 +111,7 @@ class Interpreter implements Visitor<dynamic> {
     switch (expr.operator) {
       case TokenType.minus:
         return -right;
-      case TokenType.thisIsNotRealCode:
+      case TokenType.logicalNot:
         return !_isTruthy(right);
       // Add cases for other unary operators if you support them
       default:
